@@ -932,8 +932,8 @@ float box(vec3 p, vec3 s) {
 #define MAX_STEPS 250
 #define MAX_DIST 80.
 #define INFTY (MAX_DIST * 2)
-#define SURF_DIST .02
-#define NORMAL_EPSILON 0.005
+#define SURF_DIST .005
+#define NORMAL_EPSILON SURF_DIST * 0.5
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
 #define GAMMA (1.0/2.2)
@@ -1255,9 +1255,8 @@ void m1(void)
 		rotX(lightPos[i], time * speed);
 		speed += 0.1;
 		rotY(lightPos[i], time * speed);
-		speed += 0.05;
-		rotZ(lightPos[i], time * speed);
 		speed += 0.1;
+		rotZ(lightPos[i], time * speed);
 	}
 
 //	rotX(lightPos[0], time * 0.5);
@@ -1322,6 +1321,8 @@ void m1(void)
 		//Get Light
 		//vec3 lightPos =vec3(10,20,-20) * 0.9;
 		// l = direction to the light
+		vec3 multiplicative = vec3(0.0);
+		vec3 additive = vec3(0.0);
 		for (int i = 0; i < LIGHT_COUNT; ++i) {
 			vec3 l=normalize(lightPos[i]-p);
 			// n = surface normal
@@ -1335,11 +1336,16 @@ void m1(void)
 			// "specular hardness" - smaller makes specular blots bigger
 			float po=50.;
 			// ambient light something
-			float amb=0.2;
-			vec3 ambientColor = normalize(vec3(0.5, 0.1, 1.0)) * length(vec3(1.0));
+			float amb=0.23;
+			vec3 ambientColor = normalize(vec3(0.4, 0.3, 1.0)) * length(vec3(1.0));
+			//ambientColor = vec3(1.0);
 			// t = "specular intensity" - how much specular light is added
 			float t=pow(clamp(dot(v,-rd),0.,1.),po);
-			float lightIntensity = 2.3;
+
+			float lightAngle = lightRadius * 2 / pow(length(lightPos[i] - p), 1.0);
+			float curShadow = softShadow2(p,l,SURF_DIST*2.,MAX_DIST,lightAngle);
+
+			float lightIntensity = 2.3 / LIGHT_COUNT;
 	//		col = lightIntensity *
 	//		      (1.-t)* // subtract specular
 	//		      (
@@ -1348,22 +1354,25 @@ void m1(void)
 	//			  )*col // "amplifies" the color (or rather, doesn't dim it)
 	//			  +t*vec3(1.); // specular light, independent of the surface color
 
-			col = lightIntensity *
+			multiplicative += lightIntensity *
 				  (1.-t)* // subtract specular
 				  (
 					amb * ambientColor +
 					(1.-amb)*cosphi * vec3(1.0) // rest goes to diffuse, dependant on the light to surface angle
-				  )*col // "amplifies" the color (or rather, doesn't dim it)
-				  +t*vec3(1.); // specular light, independent of the surface color
+				  )*curShadow;
+
+			additive += t*vec3(1.) * curShadow; // specular light, independent of the surface color
 				 
 			//shadow
 			//t=shadow(p,l,SURF_DIST*2.,MAX_DIST,4.);
 			// t = fraction of the light is cut, even the ambient
 			// TODO make the last parameter dynamic, based on the distance to the light source
-			float lightAngle = lightRadius * 2 / pow(length(lightPos[i] - p), 1.0);
-			t=softShadow2(p,l,SURF_DIST*2.,MAX_DIST,lightAngle);
-			col *=t;   
+			//col *=curShadow;   
 		}
+
+		col *= multiplicative; // multiply by the light color
+		col += additive; // add specular light
+
 		//col += ambientColor * (1.0 - t) * amb; // ambient light, not affected by shadow
 		
 		//fog
