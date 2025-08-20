@@ -902,7 +902,6 @@ float box(vec3 p, vec3 s) {
 	return max(p.x, max(p.y,p.z));
 }
 
-
 #define MAX_STEPS 300
 #define MAX_DIST 100.
 #define INFTY (MAX_DIST * 2)
@@ -912,6 +911,7 @@ float box(vec3 p, vec3 s) {
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
 #define GAMMA (1.0/2.2)
+#define AA 2
 
 float lightRadius = 0.4;
 vec3 lightPos =vec3(15,10,-10) * 0.9;
@@ -1203,7 +1203,7 @@ float softShadow2( in vec3 ro, in vec3 rd, float mint, float maxt, float w )
 vec3 skybox(in vec3 rd) {
 	vec3 bgColor = vec3(0.1);
 	vec3 timeComponent = vec3(0.1, 0.2, 0.3) * time;
-	float noise = sqrt(sqrt(snoise(rd * 80. + timeComponent)));
+	float noise = sqrt(sqrt(snoise(rd * 67. + timeComponent)));
 	noise = max(0.0, noise - 0.95) * 10.;
 	//return vec3(0.1, 0.1, 0.1) + noise * 0.8;
 
@@ -1218,20 +1218,31 @@ vec3 skybox(in vec3 rd) {
 
 void m1(void)
 {	
+    // environment setup
 	time = m/44100.;
 
 	rotX(lightPos, time * 0.5);
 	rotY(lightPos, time * 0.6);
 	rotZ(lightPos, time * 0.7);
-	
-	vec2 uv = (gl_FragCoord.xy - res.xy/2)/res.y;
-	vec2 uv2 = gl_FragCoord.xy/res.xy;	
 
-	vec3 col = vec3(0);
+	// returned color from iteration
+	vec3 col = vec3(0.);
+	vec3 tot = vec3(0.);
+	
+#if AA>1
+    for( int mm=0; mm<AA; mm++ )
+    for( int nn=0; nn<AA; nn++ )
+    {
+	// pixel coordinates
+	vec2 o = vec2(float(mm),float(nn)) / float(AA) - 1.0f / float(AA) / 2.0;
+#else
+	vec2 o = vec2(0.0);
+#endif
+	vec2 uv = (gl_FragCoord.xy + o - res.xy/2)/res.y;
+
 
 	// basic raymarcher
-	vec3 ro=vec3(0,0,-10);
-    ro = camPos;
+    vec3 ro = camPos;
 	vec3 rd=vec3(uv, 1);	
     rotX(rd, -camRot.y);
     rotY(rd, -camRot.x);
@@ -1312,12 +1323,14 @@ void m1(void)
 		//col=(1.-t)*col+t*vec3(.1);
 		col = pow( col, vec3(GAMMA) );
 	}
-
-	// gamma
-
+	tot += col;
+#if AA>1
+    }
+	tot /= float(AA*AA);
+#endif
     
 	// fragColor
-    o1 = vec4(col,1.0);
+    o1 = vec4(tot,1.0);
 
 	//col = mix(col, texture(sb1, uv2).xyz, 0.95);	
 
