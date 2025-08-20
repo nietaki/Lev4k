@@ -95,22 +95,23 @@ void Editor::handleCameraEvents()
 			}
 		
 			float speed = GetAsyncKeyState(VK_CONTROL) ? 1.0f : 0.1f;
-			if (GetAsyncKeyState(VK_UP)) {
+			// W == 87
+			if (GetAsyncKeyState(VK_UP) || GetAsyncKeyState(87)) {
 				camPosX += camFowardX * speed;
 				camPosY += camFowardY * speed;
 				camPosZ += camFowardZ * speed;
 			}
-			if (GetAsyncKeyState(VK_DOWN)) {
+			if (GetAsyncKeyState(VK_DOWN) || GetAsyncKeyState(83)) {
 				camPosX -= camFowardX * speed;
 				camPosY -= camFowardY * speed;
 				camPosZ -= camFowardZ * speed;
 			}
-			if (GetAsyncKeyState(VK_RIGHT)) {
+			if (GetAsyncKeyState(VK_RIGHT) || GetAsyncKeyState(68)) {
 				camPosX += camRightX * speed;
 				camPosY += camRightY * speed;
 				camPosZ += camRightZ * speed;
 			}
-			if (GetAsyncKeyState(VK_LEFT)) {
+			if (GetAsyncKeyState(VK_LEFT) || GetAsyncKeyState(65)) {
 				camPosX -= camRightX * speed;
 				camPosY -= camRightY * speed;
 				camPosZ -= camRightZ * speed;

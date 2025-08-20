@@ -1,16 +1,17 @@
 ## TODO
-- [ ] anti aliasing
+- [x] anti aliasing
 - [x] balls of light
 - [x] balls of light soft shadows
 - [x] box movements
-- [ ] shadows tinted right 
+- [x] shadows tinted right 
+- [x] map returning mapped position and index
 - [ ] synced movements
   - [ ] ball pulsating with the kick
   - [ ] row / column movements on snare
   - [ ] 
   - [ ] 
 - [x] opposite axis movements
-- [ ] cube "textures" using output modified position and instance info
+- [x] cube "textures" using output modified position and instance info
 - [ ] exported song
 - [ ] proper exported song
 - [x] skybox ?

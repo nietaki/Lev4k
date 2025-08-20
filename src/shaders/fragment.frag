@@ -16,6 +16,36 @@ vec2 res = vec2(1920,1080);
 
 mat2 rot(float a) {return mat2(cos(a),sin(a),-sin(a),cos(a));}
 
+//DAVE HOSKINS' HASH FUNCTIONS
+float rnd11(float p)
+{
+    p = fract(p * .1031);
+    p *= p + 33.33;
+    return fract(2*p*p);
+}
+
+vec3 rnd23(vec2 p)
+{
+	vec3 p3 = fract(p.xyx * vec3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz+33.33);
+    return fract((p3.xxy+p3.yzz)*p3.zyx);
+}
+/*
+float rnd31(vec3 p3)
+{
+	p3  = fract(p3 * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+*/
+vec3 rnd33(vec3 p3)
+{
+	p3 = fract(p3 * vec3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz + 33.33);
+    return fract((p3.xxy + p3.yxx) * p3.zyx);
+}
+
+// https://iquilezles.org/articles/palettes/
 const vec3 pals4[4 * 7] = vec3[](
   vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.33,0.67),
   vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.10,0.20),
@@ -25,7 +55,6 @@ const vec3 pals4[4 * 7] = vec3[](
   vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(2.0,1.0,0.0),vec3(0.5,0.20,0.25),
   vec3(0.8,0.5,0.4),vec3(0.2,0.4,0.2),vec3(2.0,1.0,1.0),vec3(0.0,0.25,0.25)
 );
-
 
 vec3 pal4( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
 {
@@ -279,8 +308,6 @@ float vmin(vec3 v) {
 float vmin(vec4 v) {
 	return min(min(v.x, v.y), min(v.z, v.w));
 }
-
-
 
 
 ////////////////////////////////////////////////////////////////
@@ -928,7 +955,10 @@ vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
     return vec2( -b-h, -b+h );
 }
 
-float map(vec3 p) {
+#define GRID_SIZE 2.0
+
+
+float map(vec3 p, out vec3 mappedPosition, out vec3 cs) {
 //	// basic kifs
 //	for(int i=0; i<4; ++i) {
 //		p.yz *= rot(time*0.3+i);
@@ -936,68 +966,55 @@ float map(vec3 p) {
 //		p.xy = abs(p.xy)-1.1 - sin(time + i);
 //	}
 //
-	vec3 repeatedPosition = p;
-	float sphere = fSphere(p, 5.);
+	mappedPosition = p;
+	float sphere = fSphere(p, 7.);
 	vec3 timeVec = vec3(0.3, 0.4, 0.5) * time;
-	repeatedPosition.x += timeVec.x;
+	mappedPosition.x += timeVec.x;
 	// c are position indexes
-	float cx = pMod1(repeatedPosition.x, 2.);
+	float cx = pMod1(mappedPosition.x, GRID_SIZE);
 
 	float rem =round(mod(abs(cx), 2.)) ;
 	if ( rem == 1.0) {
 	    timeVec.y *= -1.0;
 	}
 
-	repeatedPosition.y += timeVec.y;
+	mappedPosition.y += timeVec.y;
 
-
-	float cy = pMod1(repeatedPosition.y, 2.);
+	float cy = pMod1(mappedPosition.y, GRID_SIZE);
 
 	rem =round(mod(abs(cy), 2.)) ;
 	if (rem == 1.0) {
 	    timeVec.z *= -1.0;
 	}
 
-	repeatedPosition.z += timeVec.z;
+	mappedPosition.z += timeVec.z;
 
-	float cz = pMod1(repeatedPosition.z, 2.);
+	float cz = pMod1(mappedPosition.z, GRID_SIZE);
 
-	float box = fRoundBox(repeatedPosition, vec3(0.5), 0.05);
+	cs = vec3(cx, cy, cz);
+
+	vec3 hash = rnd33(cs * vec3(3., 5., 7.));
+	float variants = 3.;
+	float variant = floor(hash.x * variants);
+	float box = fRoundBox(mappedPosition, vec3(0.5), 0.05);
+
+	if (variant == 0.) {
+		box = GRID_SIZE / 2. - SURF_DIST;
+	}
+
 	float subjectDist = fOpIntersectionRound(sphere, box, 0.05);
+
 	return subjectDist;
+}
+
+
+float map(vec3 p) {
+	vec3 mappedPosition, cs;
+	return map(p, mappedPosition, cs);
 }
 
 float pi=acos(-1.);
 float c01(float a) {return clamp(a,0,1);}
-
-//DAVE HOSKINS' HASH FUNCTIONS
-float rnd11(float p)
-{
-    p = fract(p * .1031);
-    p *= p + 33.33;
-    return fract(2*p*p);
-}
-
-vec3 rnd23(vec2 p)
-{
-	vec3 p3 = fract(p.xyx * vec3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yxz+33.33);
-    return fract((p3.xxy+p3.yzz)*p3.zyx);
-}
-/*
-float rnd31(vec3 p3)
-{
-	p3  = fract(p3 * .1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y) * p3.z);
-}
-*/
-vec3 rnd33(vec3 p3)
-{
-	p3 = fract(p3 * vec3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yxz + 33.33);
-    return fract((p3.xxy + p3.yxx) * p3.zyx);
-}
 
 vec2 uniformToGaussian(vec2 uniformNoise, vec2 mean, float variance) {
     // Convert uniform noise to Gaussian noise using Box-Muller transform
@@ -1125,12 +1142,18 @@ vec3 getColor(vec3 p){
     return defaultMaterialColor;
 }
 
-float rayMarch(vec3 ro,vec3 rd){
+vec3 getColor(vec3 p, vec3 mappedPosition, vec3 cs){
+	vec3 hash = rnd33(cs * vec3(2., 3., 5.));
+	float variants = 3.;
+	return pal4(floor(hash.x * variants) / variants, 5) * 0.25;
+}
+
+float rayMarch(vec3 ro,vec3 rd, out vec3 mappedPosition, out vec3 cs){
     float dO=0.;
     
     for(int i=0; i<MAX_STEPS; i++){
      vec3 p=ro+rd*dO;
-        float dS=map(p);
+        float dS=map(p, mappedPosition, cs);
         dO +=0.3*dS;
         if(dO > MAX_DIST || dS< SURF_DIST) break;        
     
@@ -1257,7 +1280,8 @@ void m1(void)
 //	}
 
     
-	float d = rayMarch(ro, rd);
+	vec3 mappedPosition, cs;
+	float d = rayMarch(ro, rd, mappedPosition, cs);
 
 	vec2 lightInters = sphIntersect(ro, rd, lightPos, lightRadius);
 
@@ -1284,7 +1308,7 @@ void m1(void)
 		float cosphi=dot(n,l);
 		// v = reflected light direction (?)
 		vec3 v=normalize(-l+2.*cosphi*n);
-		col=getColor(p);
+		col=getColor(p, mappedPosition, cs);
 		// "specular hardness" - smaller makes specular blots bigger
 		float po=50.;
 		// ambient light something
