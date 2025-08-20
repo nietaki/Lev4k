@@ -16,9 +16,33 @@ vec2 res = vec2(1920,1080);
 
 mat2 rot(float a) {return mat2(cos(a),sin(a),-sin(a),cos(a));}
 
+const vec3 pals4[4 * 7] = vec3[](
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.33,0.67),
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.10,0.20),
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.3,0.20,0.20),
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,0.5),vec3(0.8,0.90,0.30),
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,0.7,0.4),vec3(0.0,0.15,0.20),
+  vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(2.0,1.0,0.0),vec3(0.5,0.20,0.25),
+  vec3(0.8,0.5,0.4),vec3(0.2,0.4,0.2),vec3(2.0,1.0,1.0),vec3(0.0,0.25,0.25)
+);
+
+
+vec3 pal4( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
+{
+  return a + b*cos( 6.28318*(c*t+d) );
+}
+
+vec3 pal4(in float t, in int which)
+{
+  int off = which * 4;
+  return pal4(t, pals4[off], pals4[off+1], pals4[off+2], pals4[off+3]);
+}
+
 //vec3 defaultMaterialColor =	vec3(0.3,0.9,0.3);
 vec3 defaultMaterialColor =	vec3(1.,20./255.,147./255.);
 vec3 red = vec3(1.0,0.2,0.2);
+
+
 
 ////////////////////////////////////////////////////////////////
 //
@@ -1129,7 +1153,9 @@ vec3 skybox(in vec3 rd) {
 	vec3 timeComponent = vec3(0.1, 0.2, 0.3) * time;
 	float noise = sqrt(sqrt(snoise(rd * 80. + timeComponent)));
 	noise = max(0.0, noise - 0.95) * 10.;
-	return vec3(0.1, 0.1, 0.1) + noise * 0.8;
+	//return vec3(0.1, 0.1, 0.1) + noise * 0.8;
+
+	return pal4(0.5 + noise * 0.8, 4);
 }
 
 

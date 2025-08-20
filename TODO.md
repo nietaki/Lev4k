@@ -2,12 +2,17 @@
 - [ ] anti aliasing
 - [ ] balls of light
 - [ ] balls of light soft shadows
-- [ ] box movements
-- [ ] synced box movements
-- [ ] opposite axis movements
+- [x] box movements
+- [ ] synced movements
+  - [ ] ball pulsating with the kick
+  - [ ] row / column movements on snare
+  - [ ] 
+  - [ ] 
+- [x] opposite axis movements
 - [ ] exported song
 - [ ] proper exported song
 - [x] skybox ?
 - [ ] size optimizations
 - [ ] movement path, scenario
 - [ ] bloom
+- [ ] text?
