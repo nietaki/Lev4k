@@ -39,7 +39,7 @@ vec3 pal4(in float t, in int which)
 }
 
 //vec3 defaultMaterialColor =	vec3(0.3,0.9,0.3);
-vec3 defaultMaterialColor =	vec3(1.,20./255.,147./255.);
+vec3 defaultMaterialColor =	vec3(1.0,20./255.,147./255.) * 0.2;
 vec3 red = vec3(1.0,0.2,0.2);
 
 
@@ -911,6 +911,7 @@ float box(vec3 p, vec3 s) {
 #define MAX_ITER 250
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
+#define GAMMA (1.0/2.2)
 
 
 float map(vec3 p) {
@@ -1148,6 +1149,42 @@ float shadow( in vec3 ro, in vec3 rd, float mint, float maxt, float k )
     return res;
 }
 
+
+float softShadow( in vec3 ro, in vec3 rd, float mint, float maxt, float w )
+{
+    float res = 1.0;
+    float ph = 1e20;
+    float t = mint;
+    for( int i=0; i<256 && t<maxt; i++ )
+    {
+        float h = map(ro + rd*t);
+        if( h<0.001 )
+            return 0.0;
+        float y = h*h/(2.0*ph);
+        float d = sqrt(h*h-y*y);
+        res = min( res, d/(w*max(0.0,t-y)) );
+        ph = h;
+        t += h;
+    }
+    return res;
+}
+
+float softShadow2( in vec3 ro, in vec3 rd, float mint, float maxt, float w )
+{
+    float res = 1.0;
+    float t = mint;
+    for( int i=0; i<256 && t<maxt; i++ )
+    {
+        float h = map(ro + t*rd);
+        res = min( res, h/(w*t) );
+        t += clamp(h, 0.005, 0.50);
+        if( res<-1.0 || t>maxt ) break;
+    }
+    res = max(res,-1.0);
+	// -1 .. 1 clamp
+    return 0.25*(1.0+res)*(1.0+res)*(2.0-res);
+}
+
 vec3 skybox(in vec3 rd) {
 	vec3 bgColor = vec3(0.1);
 	vec3 timeComponent = vec3(0.1, 0.2, 0.3) * time;
@@ -1201,25 +1238,47 @@ void m1(void)
 		//	col += clamp(map(p-rd),0,1) * fog;
 		//
 		//Get Light
-		vec3 lightPos =vec3(10,20,-20);
+		vec3 lightPos =vec3(10,20,-20) * 0.9;
+		// l = direction to the light
 		vec3 l=normalize(lightPos-p);
+		// n = surface normal
 		vec3 n=getNormal(p);
+		// used for diffuse reflection for lambertian surfac5e
+		// luminous intensity in the direction normal to the surface
 		float cosphi=dot(n,l);
+		// v = reflected light direction (?)
 		vec3 v=normalize(-l+2.*cosphi*n);
 		col=getColor(p);
-		float po=15.;
+		// "specular hardness" - smaller makes specular blots bigger
+		float po=50.;
+		// ambient light something
 		float amb=0.2;
+		// t = "specular intensity" - how much specular light is added
 		float t=pow(clamp(dot(v,-rd),0.,1.),po);
-		col = (1.-t)*(amb+(1.-amb)*cosphi)*col+t*vec3(1.);
+		float lightIntensity = 2.3;
+		col = lightIntensity *
+		      (1.-t)* // subtract specular
+		      (
+				amb+ // some proportion goes to ambient light
+				(1.-amb)*cosphi // rest goes to diffuse, dependant on the light to surface angle
+			  )*col // "amplifies" the color (or rather, doesn't dim it)
+			  +t*vec3(1.); // specular light, independent of the surface color
 			 
 		//shadow
-		t=shadow(p,l,SURF_DIST*2.,MAX_DIST,4.);
+		//t=shadow(p,l,SURF_DIST*2.,MAX_DIST,4.);
+		// t = fraction of the light is cut, even the ambient
+		// TODO make the last parameter dynamic, based on the distance to the light source
+		float lightAngle = 0.6 / pow(length(lightPos - p), 1.0);
+		t=softShadow2(p,l,SURF_DIST*2.,MAX_DIST,lightAngle);
 		col *=t;   
 		
 		//fog
 		t=pow(min(d/MAX_DIST,1.),2.);
 		col=(1.-t)*col+t*vec3(.1);
+		col = pow( col, vec3(GAMMA) );
 	}
+
+	// gamma
 
     
 	// fragColor

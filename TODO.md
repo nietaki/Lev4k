@@ -1,7 +1,7 @@
 ## TODO
 - [ ] anti aliasing
 - [ ] balls of light
-- [ ] balls of light soft shadows
+- [x] balls of light soft shadows
 - [x] box movements
 - [ ] synced movements
   - [ ] ball pulsating with the kick
@@ -9,6 +9,7 @@
   - [ ] 
   - [ ] 
 - [x] opposite axis movements
+- [ ] cube "textures" using output modified position and instance info
 - [ ] exported song
 - [ ] proper exported song
 - [x] skybox ?
