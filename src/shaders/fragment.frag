@@ -913,6 +913,20 @@ float box(vec3 p, vec3 s) {
 #define G_ANG 2.39996322973
 #define GAMMA (1.0/2.2)
 
+float lightRadius = 0.4;
+vec3 lightPos =vec3(15,10,-10) * 0.9;
+
+// sphere of size ra centered at point ce
+vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
+{
+    vec3 oc = ro - ce;
+    float b = dot( oc, rd );
+    float c = dot( oc, oc ) - ra*ra;
+    float h = b*b - c;
+    if( h<0.0 ) return vec2(-1.0); // no intersection
+    h = sqrt( h );
+    return vec2( -b-h, -b+h );
+}
 
 float map(vec3 p) {
 //	// basic kifs
@@ -949,7 +963,8 @@ float map(vec3 p) {
 	float cz = pMod1(repeatedPosition.z, 2.);
 
 	float box = fRoundBox(repeatedPosition, vec3(0.5), 0.05);
-	return fOpIntersectionRound(sphere, box, 0.05);
+	float subjectDist = fOpIntersectionRound(sphere, box, 0.05);
+	return subjectDist;
 }
 
 float pi=acos(-1.);
@@ -1204,6 +1219,10 @@ vec3 skybox(in vec3 rd) {
 void m1(void)
 {	
 	time = m/44100.;
+
+	rotX(lightPos, time * 0.5);
+	rotY(lightPos, time * 0.6);
+	rotZ(lightPos, time * 0.7);
 	
 	vec2 uv = (gl_FragCoord.xy - res.xy/2)/res.y;
 	vec2 uv2 = gl_FragCoord.xy/res.xy;	
@@ -1225,9 +1244,15 @@ void m1(void)
 //		if(d>MAX_DIST) break;
 //		p+=rd*d;
 //	}
+
+    
 	float d = rayMarch(ro, rd);
 
-	if (d > MAX_DIST) {
+	vec2 lightInters = sphIntersect(ro, rd, lightPos, lightRadius);
+
+	if (lightInters.x >= 0.0 && lightInters.x < d) {
+		col = vec3(1.0);
+	} else if (d > MAX_DIST) {
 		col = skybox(rd);
 	} else {
 		
@@ -1238,7 +1263,7 @@ void m1(void)
 		//	col += clamp(map(p-rd),0,1) * fog;
 		//
 		//Get Light
-		vec3 lightPos =vec3(10,20,-20) * 0.9;
+		//vec3 lightPos =vec3(10,20,-20) * 0.9;
 		// l = direction to the light
 		vec3 l=normalize(lightPos-p);
 		// n = surface normal
@@ -1253,14 +1278,23 @@ void m1(void)
 		float po=50.;
 		// ambient light something
 		float amb=0.2;
+		vec3 ambientColor = normalize(vec3(0.5, 0.1, 1.0)) * length(vec3(1.0));
 		// t = "specular intensity" - how much specular light is added
 		float t=pow(clamp(dot(v,-rd),0.,1.),po);
 		float lightIntensity = 2.3;
+//		col = lightIntensity *
+//		      (1.-t)* // subtract specular
+//		      (
+//				amb+ // some proportion goes to ambient light
+//				(1.-amb)*cosphi // rest goes to diffuse, dependant on the light to surface angle
+//			  )*col // "amplifies" the color (or rather, doesn't dim it)
+//			  +t*vec3(1.); // specular light, independent of the surface color
+
 		col = lightIntensity *
 		      (1.-t)* // subtract specular
 		      (
-				amb+ // some proportion goes to ambient light
-				(1.-amb)*cosphi // rest goes to diffuse, dependant on the light to surface angle
+			    amb * ambientColor +
+				(1.-amb)*cosphi * vec3(1.0) // rest goes to diffuse, dependant on the light to surface angle
 			  )*col // "amplifies" the color (or rather, doesn't dim it)
 			  +t*vec3(1.); // specular light, independent of the surface color
 			 
@@ -1268,13 +1302,14 @@ void m1(void)
 		//t=shadow(p,l,SURF_DIST*2.,MAX_DIST,4.);
 		// t = fraction of the light is cut, even the ambient
 		// TODO make the last parameter dynamic, based on the distance to the light source
-		float lightAngle = 0.6 / pow(length(lightPos - p), 1.0);
+		float lightAngle = lightRadius * 2 / pow(length(lightPos - p), 1.0);
 		t=softShadow2(p,l,SURF_DIST*2.,MAX_DIST,lightAngle);
 		col *=t;   
+		//col += ambientColor * (1.0 - t) * amb; // ambient light, not affected by shadow
 		
 		//fog
-		t=pow(min(d/MAX_DIST,1.),2.);
-		col=(1.-t)*col+t*vec3(.1);
+		//t=pow(min(d/MAX_DIST,1.),2.);
+		//col=(1.-t)*col+t*vec3(.1);
 		col = pow( col, vec3(GAMMA) );
 	}
 

@@ -1,8 +1,9 @@
 ## TODO
 - [ ] anti aliasing
-- [ ] balls of light
+- [x] balls of light
 - [x] balls of light soft shadows
 - [x] box movements
+- [ ] shadows tinted right 
 - [ ] synced movements
   - [ ] ball pulsating with the kick
   - [ ] row / column movements on snare
