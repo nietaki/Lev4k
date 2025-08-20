@@ -83,34 +83,34 @@ void Editor::handleCameraEvents()
 				float offX = (cursorPos.x - lastCursorPos.x) * 0.003f;
 				float offY = (cursorPos.y - lastCursorPos.y) * 0.003f;
 
-				camRotX -= offX;
-				camRotY = min(max(camRotY+offY,-1.57),1.57);
+				camRotX += offX;
+				camRotY = min(max(camRotY-offY,-1.57),1.57);
 
-				camFowardX = -sin(camRotX) * cos(camRotY);
-				camFowardY = -sin(camRotY);
-				camFowardZ = -cos(camRotX) * cos(camRotY);
+				camFowardX = sin(camRotX) * cos(camRotY);
+				camFowardY = sin(camRotY);
+				camFowardZ = cos(camRotX) * cos(camRotY);
 
 				camRightX = cos(camRotX);
 				camRightZ = -sin(camRotX);
 			}
 		
 			float speed = GetAsyncKeyState(VK_CONTROL) ? 1.0f : 0.1f;
-			if (GetAsyncKeyState(VK_DOWN)) {
+			if (GetAsyncKeyState(VK_UP)) {
 				camPosX += camFowardX * speed;
 				camPosY += camFowardY * speed;
 				camPosZ += camFowardZ * speed;
 			}
-			if (GetAsyncKeyState(VK_UP)) {
+			if (GetAsyncKeyState(VK_DOWN)) {
 				camPosX -= camFowardX * speed;
 				camPosY -= camFowardY * speed;
 				camPosZ -= camFowardZ * speed;
 			}
-			if (GetAsyncKeyState(VK_LEFT)) {
+			if (GetAsyncKeyState(VK_RIGHT)) {
 				camPosX += camRightX * speed;
 				camPosY += camRightY * speed;
 				camPosZ += camRightZ * speed;
 			}
-			if (GetAsyncKeyState(VK_RIGHT)) {
+			if (GetAsyncKeyState(VK_LEFT)) {
 				camPosX -= camRightX * speed;
 				camPosY -= camRightY * speed;
 				camPosZ -= camRightZ * speed;
@@ -119,6 +119,7 @@ void Editor::handleCameraEvents()
 		lastCursorPos = cursorPos;
 	}
 
-	printf("CamPos: %f %f %f CamRot: %f %f ", camPosX, camPosY, camPosZ, camRotX, camRotY);
+	printf("CamPos: %4.2f %4.2f %4.2f CamRot: %4.2f %4.2f ", camPosX, camPosY, camPosZ, camRotX, camRotY);
+	//printf("CamFwd: %f %f %f ", camFowardX, camFowardY, camFowardZ);
 
 }

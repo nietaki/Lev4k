@@ -1,0 +1,13 @@
+## TODO
+- [ ] anti aliasing
+- [ ] balls of light
+- [ ] balls of light soft shadows
+- [ ] box movements
+- [ ] synced box movements
+- [ ] opposite axis movements
+- [ ] exported song
+- [ ] proper exported song
+- [x] skybox ?
+- [ ] size optimizations
+- [ ] movement path, scenario
+- [ ] bloom

@@ -31,9 +31,12 @@ namespace Lev4k
 	public:
 		POINT lastCursorPos;
 
-		float camPosX = -28.635f;
-		float camPosY = -1.601f;
-		float camPosZ = -4.168f;
+		//float camPosX = -28.635f;
+		float camPosX = 2.f;
+		//float camPosY = -1.601f;
+		float camPosY = 0.f;
+		//float camPosZ = -4.168f;
+		float camPosZ = -20.0;
 
 		float camFowardX = 0;
 		float camFowardY = 0;
@@ -43,7 +46,9 @@ namespace Lev4k
 		float camRightY = 0;
 		float camRightZ = 0;
 
-		float camRotX = 8.455f;
-		float camRotY = .152f;
+		//float camRotX = 8.455f;
+		float camRotX = 0.f;
+		//float camRotY = .152f;
+		float camRotY = 0.f;
 	};
 }
