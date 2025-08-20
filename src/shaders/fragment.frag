@@ -16,6 +16,9 @@ vec2 res = vec2(1920,1080);
 
 mat2 rot(float a) {return mat2(cos(a),sin(a),-sin(a),cos(a));}
 
+//vec3 defaultMaterialColor =	vec3(0.3,0.9,0.3);
+vec3 defaultMaterialColor =	vec3(1.,20./255.,147./255.);
+vec3 red = vec3(1.0,0.2,0.2);
 
 ////////////////////////////////////////////////////////////////
 //
@@ -549,6 +552,19 @@ float pMod1(inout float p, float size) {
 	return c;
 }
 
+//float pMod1Reversed(inout float p, float size) {
+//	float halfsize = size*0.5;
+//	float c = floor((p + halfsize)/size);
+//
+//	if (mod(abs(c),  2.) >= 0.5) {
+//	  p = -p;
+//	}
+//
+//	c = floor((p + halfsize)/size);
+//	p = mod(p + halfsize, size) - halfsize;
+//	return c;
+//}
+
 // Same, but mirror every second cell so they match at the boundaries
 float pModMirror1(inout float p, float size) {
 	float halfsize = size*0.5;
@@ -862,26 +878,6 @@ float box(vec3 p, vec3 s) {
 	return max(p.x, max(p.y,p.z));
 }
 
-float map(vec3 p) {
-//	// basic kifs
-//	for(int i=0; i<4; ++i) {
-//		p.yz *= rot(time*0.3+i);
-//		p.xz *= rot(time*0.4+i*1.7);
-//		p.xy = abs(p.xy)-1.1 - sin(time + i);
-//	}
-//
-	float sphere = fSphere(p, 5.);
-	vec3 repeatedPosition = p;
-	// c are position indexes
-	float cx = pMod1(repeatedPosition.x, 2.);
-	float cy = pMod1(repeatedPosition.y, 2.);
-	float cz = pMod1(repeatedPosition.z, 2.);
-
-	float box = fRoundBox(repeatedPosition, vec3(0.5,0.6,0.8), 0.04);
-	return fOpIntersectionRound(sphere, box, 0.05);
-}
-
-// ROMANESCO
 
 #define MAX_STEPS 300
 #define MAX_DIST 100.
@@ -891,6 +887,45 @@ float map(vec3 p) {
 #define MAX_ITER 250
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
+
+
+float map(vec3 p) {
+//	// basic kifs
+//	for(int i=0; i<4; ++i) {
+//		p.yz *= rot(time*0.3+i);
+//		p.xz *= rot(time*0.4+i*1.7);
+//		p.xy = abs(p.xy)-1.1 - sin(time + i);
+//	}
+//
+	vec3 repeatedPosition = p;
+	float sphere = fSphere(p, 5.);
+	vec3 timeVec = vec3(0.3, 0.4, 0.5) * time;
+	repeatedPosition.x += timeVec.x;
+	// c are position indexes
+	float cx = pMod1(repeatedPosition.x, 2.);
+
+	float rem =round(mod(abs(cx), 2.)) ;
+	if ( rem == 1.0) {
+	    timeVec.y *= -1.0;
+	}
+
+	repeatedPosition.y += timeVec.y;
+
+
+	float cy = pMod1(repeatedPosition.y, 2.);
+
+	rem =round(mod(abs(cy), 2.)) ;
+	if (rem == 1.0) {
+	    timeVec.z *= -1.0;
+	}
+
+	repeatedPosition.z += timeVec.z;
+
+	float cz = pMod1(repeatedPosition.z, 2.);
+
+	float box = fRoundBox(repeatedPosition, vec3(0.5), 0.05);
+	return fOpIntersectionRound(sphere, box, 0.05);
+}
 
 float pi=acos(-1.);
 float c01(float a) {return clamp(a,0,1);}
@@ -1047,7 +1082,7 @@ void rotX(inout vec3 p, float alpha){
 }
 
 vec3 getColor(vec3 p){
-    return vec3(0.3,0.9,0.3);
+    return defaultMaterialColor;
 }
 
 float rayMarch(vec3 ro,vec3 rd){
@@ -1147,7 +1182,7 @@ void m1(void)
 		vec3 v=normalize(-l+2.*cosphi*n);
 		col=getColor(p);
 		float po=15.;
-		float amb=0.1;
+		float amb=0.2;
 		float t=pow(clamp(dot(v,-rd),0.,1.),po);
 		col = (1.-t)*(amb+(1.-amb)*cosphi)*col+t*vec3(1.);
 			 
