@@ -5,17 +5,18 @@
 - [x] box movements
 - [x] shadows tinted right 
 - [x] map returning mapped position and index
-- [ ] synced movements
+- [x] synced movements
   - [ ] ball pulsating with the kick
   - [ ] row / column movements on snare
   - [ ] 
   - [ ] 
 - [x] opposite axis movements
 - [x] cube "textures" using output modified position and instance info
-- [ ] exported song
-- [ ] proper exported song
+- [x] exported song
+- [x] proper exported song
 - [x] skybox ?
 - [ ] size optimizations
 - [ ] movement path, scenario
 - [ ] bloom
+- [ ] film grain rendering
 - [ ] text?

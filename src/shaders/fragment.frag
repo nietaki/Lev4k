@@ -1,5 +1,7 @@
 #version 330
 #define m1 main
+#define DEBUG_COLORS false
+
 uniform int m;
 uniform sampler2D sb1;
 
@@ -937,8 +939,62 @@ float box(vec3 p, vec3 s) {
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
 #define GAMMA (1.0/2.2)
-#define AA 1
+#define AA 2
 #define LIGHT_COUNT 3
+
+///////////////
+// music stuff
+///////////////
+
+// copied from 4klang.h
+#define SAMPLE_RATE 44100
+#define BPM 166.000000
+#define MAX_INSTRUMENTS 7
+#define MAX_PATTERNS 121
+#define PATTERN_SIZE_SHIFT 4
+#define PATTERN_SIZE (1 << PATTERN_SIZE_SHIFT)
+#define MAX_TICKS (MAX_PATTERNS*PATTERN_SIZE)
+#define SAMPLES_PER_TICK 3984
+#define MAX_SAMPLES (SAMPLES_PER_TICK*MAX_TICKS)
+
+#define BEAT_TIME (60.0 / BPM) // seconds per beat
+#define MAX_BEATS 120.0
+#define MAX_TIME (BPM * MAX_BEATS)
+
+vec3 audioProgress = vec3(0.);
+
+// all are 0-based and contain their own fractional parts
+vec3 getAudioProgress() {
+	vec3 ret;
+	ret.x = time / (4.0 * BEAT_TIME); // bars total progress
+	ret.y = time / BEAT_TIME; // beats total progress
+	ret.z = time / MAX_TIME; // total_progress 
+	return ret;
+}
+
+#define I(x) (int(floor(x)))
+
+#define BAR0 (audioProgress.x)
+#define BAR1 (audioProgress.x + 1.0)
+#define BAR_PROGRESS fract(BAR0)
+
+#define WHOLE_NOTE 1.
+#define HALF_NOTE 2.
+#define QUARTER_NOTE 4.
+#define EIGHTH_NOTE 8.
+#define SIXTEENTH_NOTE 16.
+
+// progress in the bar, when measured in the given note type
+// something something, inaccurracies
+#define NOTE0(d) (BAR_PROGRESS * d)
+#define NOTE1(d) (NOTE0(d) + 1.0)
+
+#define BEAT0 NOTE0(QUARTER_NOTE)
+#define BEAT1 NOTE1(QUARTER_NOTE)
+
+
+
+
 
 float lightRadius = 1.2;
 vec3 lightPos[LIGHT_COUNT] = vec3[LIGHT_COUNT](
@@ -1002,10 +1058,18 @@ float map(vec3 p, out vec3 mappedPosition, out vec3 cs) {
 	vec3 hash = rnd33(cs * vec3(3., 5., 7.));
 	float variants = 3.;
 	float variant = floor(hash.x * variants);
-	float box = fRoundBox(mappedPosition, vec3(BOX_SIZE), BOX_ROUNDNESS);
+
+	float boxSize = BOX_SIZE;
+	int beat = I(BEAT1);
+	
+	if (beat == 1 || beat == 3) {
+		boxSize *= 1.3;
+	}
+
+	float box = fRoundBox(mappedPosition, vec3(boxSize), BOX_ROUNDNESS);
 
 	if (variant == 0.) {
-		box = GRID_SIZE / 2. - BOX_SIZE - SURF_DIST;
+		box = GRID_SIZE / 2. - boxSize; // - SURF_DIST;
 	}
 
 	float subjectDist = fOpIntersectionRound(sphere, box, BOX_ROUNDNESS);
@@ -1244,11 +1308,10 @@ vec3 skybox(in vec3 rd) {
 // MAIN PASS              //
 ////////////////////////////
 
-void m1(void)
-{	
-    // environment setup
-	time = m/44100.;
+void choreography() {
+	audioProgress = getAudioProgress();
 
+	// light bulb movement speed, that is
 	float speed = 0.1;
 
 	for(int i=0; i<LIGHT_COUNT; ++i) {
@@ -1258,6 +1321,15 @@ void m1(void)
 		speed += 0.1;
 		rotZ(lightPos[i], time * speed);
 	}
+}
+
+void m1(void)
+{	
+    // environment setup
+	time = m/44100.;
+
+	choreography();
+
 
 //	rotX(lightPos[0], time * 0.5);
 //	rotY(lightPos[0], time * 0.6);
@@ -1385,9 +1457,18 @@ void m1(void)
     }
 	tot /= float(AA*AA);
 #endif
+
+	// debugging
+
+	if(DEBUG_COLORS) {
+		//tot = vec3(floor(BEAT0) / 4.0);
+		tot = vec3(floor(NOTE0(EIGHTH_NOTE)) / 4.0);
+	}
+	
     
 	// fragColor
     o1 = vec4(tot,1.0);
+
 
 	//col = mix(col, texture(sb1, uv2).xyz, 0.95);	
 

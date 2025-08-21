@@ -295,7 +295,9 @@ int __cdecl main(int argc, char* argv[])
 				}
 
 				// looping at the end
-				if(newtime >= MAX_SAMPLES) newtime = 0;
+				if (newtime >= MAX_SAMPLES) {
+					newtime = 0;
+				}
 				// looping when rewinding past the begining
 				if(newtime<0) newtime += MAX_SAMPLES;
 
