@@ -935,11 +935,11 @@ float box(vec3 p, vec3 s) {
 #define MAX_DIST 80.
 #define INFTY (MAX_DIST * 2)
 #define SURF_DIST .005
-#define NORMAL_EPSILON SURF_DIST * 0.5
+#define NORMAL_EPSILON SURF_DIST * 0.1
 #define TWO_PI 6.28318530718
 #define G_ANG 2.39996322973
 #define GAMMA (1.0/2.2)
-#define AA 2
+#define AA 1
 #define LIGHT_COUNT 3
 
 ///////////////
@@ -1019,6 +1019,7 @@ vec2 sphIntersect( in vec3 ro, in vec3 rd, in vec3 ce, float ra )
 #define BOX_SIZE 0.75
 #define BOX_ROUNDNESS 0.1
 
+float boxSizeMulti = 1.0;
 
 float map(vec3 p, out vec3 mappedPosition, out vec3 cs) {
 //	// basic kifs
@@ -1059,21 +1060,14 @@ float map(vec3 p, out vec3 mappedPosition, out vec3 cs) {
 	float variants = 3.;
 	float variant = floor(hash.x * variants);
 
-	float boxSize = BOX_SIZE;
-	int beat = I(BEAT1);
-	
-	if (beat == 1 || beat == 3) {
-		boxSize *= 1.3;
-	}
-
-	float box = fRoundBox(mappedPosition, vec3(boxSize), BOX_ROUNDNESS);
+	float box = fRoundBox(mappedPosition, vec3(BOX_SIZE * boxSizeMulti), BOX_ROUNDNESS);
 
 	if (variant == 0.) {
-		box = GRID_SIZE / 2. - boxSize; // - SURF_DIST;
+		box = GRID_SIZE / 2. - BOX_SIZE * boxSizeMulti; // - SURF_DIST;
 	}
 
-	float subjectDist = fOpIntersectionRound(sphere, box, BOX_ROUNDNESS);
-
+	float subjectDist = fOpIntersectionRound(sphere, box, BOX_ROUNDNESS * 0.);
+	subjectDist = max(sphere, box);
 	return subjectDist;
 }
 
@@ -1321,6 +1315,11 @@ void choreography() {
 		speed += 0.1;
 		rotZ(lightPos[i], time * speed);
 	}
+
+	// move the boxes
+	if (fract(BAR0 / 8.0) >= 0.5) {
+		boxSizeMulti = 1.3;
+	}
 }
 
 void m1(void)
@@ -1464,6 +1463,10 @@ void m1(void)
 		//tot = vec3(floor(BEAT0) / 4.0);
 		tot = vec3(floor(NOTE0(EIGHTH_NOTE)) / 4.0);
 	}
+
+	if (min(tot.x, min(tot.y, tot.z)) >= 0.8) {
+		//tot = vec3(0., 1.0, 0.);
+	}
 	
     
 	// fragColor
@@ -1493,8 +1496,9 @@ void m2(void)
 	col.y += texture(sb1, uv).y;
 	col.z += texture(sb1, uv+off).z;
 	
-	o1 = vec4(col,1);
+	o1 = vec4(col * 10.,1);
+	o1 = vec4(2.0);
     // disregard everything
-    o1 = texture(sb1, uv);
+    //o1 = texture(sb1, uv);
 }
 
