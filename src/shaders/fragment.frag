@@ -1,6 +1,5 @@
 #version 330
 #define m1 main
-#define DEBUG_COLORS false
 
 uniform int m;
 uniform sampler2D sb1;
@@ -1303,7 +1302,7 @@ vec3 skybox(in vec3 rd) {
 ////////////////////////////
 
 void choreography() {
-	audioProgress = getAudioProgress();
+	//audioProgress = getAudioProgress();
 
 	// light bulb movement speed, that is
 	float speed = 0.1;
@@ -1317,9 +1316,9 @@ void choreography() {
 	}
 
 	// move the boxes
-	if (fract(BAR0 / 8.0) >= 0.5) {
-		boxSizeMulti = 1.3;
-	}
+	//if (fract(BAR0 / 8.0) >= 0.5) {
+//		boxSizeMulti = 1.3;
+	//}
 }
 
 void m1(void)
@@ -1457,22 +1456,11 @@ void m1(void)
 	tot /= float(AA*AA);
 #endif
 
-	// debugging
-
-	if(DEBUG_COLORS) {
-		//tot = vec3(floor(BEAT0) / 4.0);
-		//tot = vec3(floor(NOTE0(EIGHTH_NOTE)) / 4.0);
-	}
-
-	if (min(tot.x, min(tot.y, tot.z)) >= 0.8) {
-		//tot = vec3(0., 1.0, 0.);
-	}
-	
     
 	// fragColor
     o1 = vec4(tot,1.0);
 
-	o1 = vec4(defaultMaterialColor, 1.0);
+	//o1 = vec4(defaultMaterialColor, 1.0);
 
 
 	//col = mix(col, texture(sb1, uv2).xyz, 0.95);	
@@ -1488,6 +1476,7 @@ void m1(void)
 
 void m2(void)
 {	
+	return;
 	time = m/44100.;
 	
 	vec2 uv = gl_FragCoord.xy/res.xy;
