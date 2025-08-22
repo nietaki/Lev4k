@@ -187,7 +187,12 @@ int __cdecl main(int argc, char* argv[])
 		#ifdef EDITOR_CONTROLS
 			glUniform3f(glGetUniformLocation(pidMain, "camPos"), editor.camPosX, editor.camPosY, editor.camPosZ);
 			glUniform3f(glGetUniformLocation(pidMain, "camRot"), editor.camRotX, editor.camRotY, 0);
+		#else
+			glUniform3f(glGetUniformLocation(pidMain, "camPos"), 2., 0., -20);
+			glUniform3f(glGetUniformLocation(pidMain, "camRot"), 0., 0., 0);
 		#endif
+
+
 
 		#if NEED_PREVTIME
 			glUniform1i(glGetUniformLocation(pidMain, PRETIME_VAR_NAME), prevTime);
@@ -209,14 +214,8 @@ int __cdecl main(int argc, char* argv[])
 
 		glBindTexture(GL_TEXTURE_2D, 1);
 
-#if USE_MIPMAPS
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		glGenerateMipmap(GL_TEXTURE_2D);
-#else
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-#endif	
 
 		glActiveTexture(GL_TEXTURE0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

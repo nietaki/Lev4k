@@ -1461,7 +1461,7 @@ void m1(void)
 
 	if(DEBUG_COLORS) {
 		//tot = vec3(floor(BEAT0) / 4.0);
-		tot = vec3(floor(NOTE0(EIGHTH_NOTE)) / 4.0);
+		//tot = vec3(floor(NOTE0(EIGHTH_NOTE)) / 4.0);
 	}
 
 	if (min(tot.x, min(tot.y, tot.z)) >= 0.8) {
@@ -1471,6 +1471,8 @@ void m1(void)
     
 	// fragColor
     o1 = vec4(tot,1.0);
+
+	o1 = vec4(defaultMaterialColor, 1.0);
 
 
 	//col = mix(col, texture(sb1, uv2).xyz, 0.95);	
@@ -1496,9 +1498,10 @@ void m2(void)
 	col.y += texture(sb1, uv).y;
 	col.z += texture(sb1, uv+off).z;
 	
-	o1 = vec4(col * 10.,1);
-	o1 = vec4(2.0);
+	//o1 = vec4(col,1);
+	//o1 = vec4(2.0);
     // disregard everything
-    //o1 = texture(sb1, uv);
+    o1 = texture(sb1, uv);
+	//o1 = vec4(1.0);
 }
 
