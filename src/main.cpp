@@ -180,7 +180,6 @@ int __cdecl main(int argc, char* argv[])
 		////////////////////////////
 		// MAIN RENDERING //
 		////////////////////////////
-		glViewport(0, 0, XRES, YRES);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(pidMain);
@@ -207,20 +206,6 @@ int __cdecl main(int argc, char* argv[])
 		//////////////////
 		// POST-PROCESS //
 		//////////////////
-
-		//glBindTexture(GL_TEXTURE_2D, 1);
-
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glBindTexture(GL_TEXTURE_2D, textureframe[1]);
-
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		////glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		//
-		////glActiveTexture(GL_TEXTURE0);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		//glUseProgram(pidPost);
 
 		glBindTexture(GL_TEXTURE_2D, 1);
 
