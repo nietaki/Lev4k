@@ -1326,6 +1326,9 @@ void m1(void)
     // environment setup
 	time = m/44100.;
 
+	o1 = vec4(1.0, 0.0, 0.0, 1.0); // output debug color
+	return;
+
 	choreography();
 
 
@@ -1476,10 +1479,15 @@ void m1(void)
 
 void m2(void)
 {	
+	o1 = vec4(1.0, 0.0, 0.0, 1.0); // output debug color
 	return;
+	vec2 uv = gl_FragCoord.xy/res.xy;
+    o1 = vec4(texture(sb1, uv).xyz, 1.0);
+	return;
+
 	time = m/44100.;
 	
-	vec2 uv = gl_FragCoord.xy/res.xy;
+	uv = gl_FragCoord.xy/res.xy;
 	
 	vec3 col=vec3(0);
 	vec2 off=vec2(0.005,0);
